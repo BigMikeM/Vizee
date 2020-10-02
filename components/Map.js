@@ -4,7 +4,7 @@ import Svg, { G, Path, Circle } from 'react-native-svg'
 import { View, StyleSheet } from 'react-native'
 import { COUNTRIES } from '../assets/CountryShapes'
 
-const Map = (props) => {
+const CovidMap = (props) => {
   const [countryList, setCountryList] = useState([])
   const { dimensions } = props
 
@@ -25,7 +25,7 @@ const Map = (props) => {
       .rotate([0, 90])
 
       // Remove some extra parts of the map away from the center
-      .clipAngle(150)
+      .clipAngle(50)
 
       // Scale the map to the screen size
       .fitSize([mapSizeConstraint, mapSizeConstraint], {
@@ -81,4 +81,4 @@ const Map = (props) => {
 
 const styles = StyleSheet.create({})
 
-export default Map
+export default CovidMap

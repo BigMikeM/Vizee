@@ -8,7 +8,7 @@
 
 import React, { Component } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
-import Map from './components/Map'
+import CovidMap from './components/Map'
 
 class App extends Component {
   state = {
@@ -25,7 +25,7 @@ class App extends Component {
     const windowSize = Dimensions.get('window')
     return (
       <View style={styles.container}>
-        <Map dimensions={windowSize} />
+        <CovidMap dimensions={windowSize} />
       </View>
     )
   }
