@@ -7,7 +7,8 @@
  */
 
 import React, { Component } from 'react'
-import { StyleSheet, TouchableOpacity, Text, View } from 'react-native'
+import { Dimensions, StyleSheet, View } from 'react-native'
+import Map from './components/Map'
 
 class App extends Component {
   state = {
@@ -21,14 +22,10 @@ class App extends Component {
   }
 
   render() {
+    const windowSize = Dimensions.get('window')
     return (
       <View style={styles.container}>
-        <TouchableOpacity style={styles.button} onPress={this.onPress}>
-          <Text>Click me</Text>
-        </TouchableOpacity>
-        <View>
-          <Text>You clicked {this.state.count} times</Text>
-        </View>
+        <Map dimensions={windowSize} />
       </View>
     )
   }
@@ -38,11 +35,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+  },
+  text: {
+    color: '#E59500'
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#DDDDDD',
+    backgroundColor: '#840032',
     padding: 10,
     marginBottom: 10
   }
