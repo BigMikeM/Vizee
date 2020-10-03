@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import CovidMap from './components/Map'
 import rawCovidData from './assets/data/WHO-COVID-19-global-data.json'
@@ -28,15 +28,15 @@ const App = () => {
     }))
     // For now, the windowSize is hardcoded (more work on dynamically changing it later)
     const windowSize = 7
-    
+
     const countriesWithAverage = countryArray.map((country) => ({
       name: country.name,
       data: [...rollingAverage(country.data, windowSize)]
     }))
-    // This one will narrow down our list of countries to one _above_ a specified amount of
-    // daily cases (here set to 10 per day). The filter function will use findIndex to 
-    // determine if anything matches our criteria (d[stat] >= 10) and return the index or
-    // a negative 1 to show it wasn't found. We don't want anything that comes back `-1`
+    /* This one will narrow down our list of countries to one _above_ a specified amount of
+     *  daily cases (here set to 10 per day). The filter function will use findIndex to
+     *  determine if anything matches our criteria (d[stat] >= 10) and return the index or
+     *  a negative 1 to show it wasn't found. We don't want anything that comes back `-1` */
     const filteredCountries = countriesWithAverage.filter(
       (country) => country.data.findIndex((d, _) => d[stat] >= 10) != -1
     )
@@ -44,9 +44,28 @@ const App = () => {
     return filteredCountries
   }, [])
 
+  const maxY = useMemo(() => {
+    // d3.max will find the maximum value in an array! This way, we can find our maximum
+    // 'Y' value (the vertical axis) based on our 'stat' value on state
+    return d3.max(covidData, (country) =>
+      date.max(country.data, (d) => d[stat], [stat])
+    )
+  })
+
+  const colorScale = useMemo(() => {
+    // This function will interpolate and scale shades of red based on given input
+    return d3.scaleSequentialLog(d3.interpolateReds).domain([0, maxY])
+  }, [maxY])
+
   return (
     <View style={styles.container}>
-      <CovidMap dimensions={windowSize} />
+      <CovidMap
+        dimensions={windowSize}
+        data={data}
+        date={date}
+        colorScale={colorScale}
+        stat={stat}
+      />
     </View>
   )
 }

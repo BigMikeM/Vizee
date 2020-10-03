@@ -6,7 +6,7 @@ import { COUNTRIES } from '../assets/CountryShapes'
 
 const CovidMap = (props) => {
   const [countryList, setCountryList] = useState([])
-  const { dimensions } = props
+  const { dimensions, data, date, colorScale, stat } = props
 
   // The below will determine whether to keep the map constrained to half the height or half the
   // width of the phone screen
@@ -47,6 +47,25 @@ const CovidMap = (props) => {
   useEffect(() => {
     setCountryList(
       countryPaths.map((path, index) => {
+        // This will wind up building a lot of logic we can use for conditional rendering later on
+        const currentCountry = COUNTRIES[index].properties.name
+        // Determine the current country exists
+        const findCountry = data.some(
+          (country) => country.name === currentCountry
+        )
+        // Retrieve data for it or return null if not found
+        const currentCountryData = foundCountry
+          ? data.find((country) => country.name === currentCountry['data'])
+          : null
+        // Make sure data exists or return false
+        const hasData = findCountry
+          ? currentCountryData.some((data) => data.date === date)
+          : false
+        // get the date index from the data
+        const dateIdx = hasData
+          ? currentCountryData.findIndex((x) => x.date === date)
+          : null
+
         return (
           <Path
             key={COUNTRIES[index].properties.name}
@@ -54,8 +73,11 @@ const CovidMap = (props) => {
             stroke={'#aaa'}
             strokeOpacity={0.3}
             strokeWidth={0.6}
-            fill={'#aaa'}
-            opacity={0.4}
+            fill={ // Check whether there is data and , if so, generate colors for it
+              hasData ? colorScale(currentCountryData[dateIdx][stat]) : '#aaa'
+            }
+            // If data exists, make this opaque. Otherwise, leave it translucent
+            opacity={hasData ? 1 : 0.4}
           />
         )
       })
