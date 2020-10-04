@@ -11,21 +11,25 @@ import { Dimensions, StyleSheet, View } from 'react-native'
 import CovidMap from './components/Map'
 import rawCovidData from './assets/data/WHO-COVID-19-global-data.json'
 import rollingAverage from './assets/RollingAverage'
+import dataRestructure from './assets/dataRestructure'
 import * as d3 from 'd3'
 
 const App = () => {
-  const [stat, setStat] = useState('avg_confirmed')
+  const [stat, setStat] = useState('avg_New_deaths')
   const [date, setDate] = useState('2020-10-01')
   const windowSize = Dimensions.get('window')
 
   // The useMemo hook is useful here because we don't want all this calculation
   // happening on every render, just when the values change.
   const covidData = useMemo(() => {
-    // This will transform our data in to an array of objects (Object.keys returns an array)
-    const countryArray = Object.keys(rawCovidData).map((country) => ({
+    // First, I'm restructuring the data from the JSON file a bit
+    const newData = dataRestructure(rawCovidData)
+    // This will transform our data in to an array of objects
+    const countryArray = Object.keys(newData).map((country) => ({
       name: country,
-      data: rawCovidData[country]
+      data: newData[country]
     }))
+
     // For now, the windowSize is hardcoded (more work on dynamically changing it later)
     const windowSize = 7
 
@@ -48,20 +52,20 @@ const App = () => {
     // d3.max will find the maximum value in an array! This way, we can find our maximum
     // 'Y' value (the vertical axis) based on our 'stat' value on state
     return d3.max(covidData, (country) =>
-      date.max(country.data, (d) => d[stat], [stat])
+      d3.max(country.data, (d) => d[stat], [stat])
     )
   })
 
   const colorScale = useMemo(() => {
-    // This function will interpolate and scale shades of red based on given input
-    return d3.scaleSequentialLog(d3.interpolateReds).domain([0, maxY])
+    // This function will interpolate and scale shades of blue based on given input
+    return d3.scaleSequentialLog(d3.interpolateBlues).domain([0, maxY])
   }, [maxY])
 
   return (
     <View style={styles.container}>
       <CovidMap
         dimensions={windowSize}
-        data={data}
+        data={covidData}
         date={date}
         colorScale={colorScale}
         stat={stat}

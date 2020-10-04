@@ -7,7 +7,6 @@ import { COUNTRIES } from '../assets/CountryShapes'
 const CovidMap = (props) => {
   const [countryList, setCountryList] = useState([])
   const { dimensions, data, date, colorScale, stat } = props
-
   // The below will determine whether to keep the map constrained to half the height or half the
   // width of the phone screen
   // useMemo will allow us to only do this when something changes, rather than every render
@@ -21,11 +20,11 @@ const CovidMap = (props) => {
     const projection = d3
       .geoAzimuthalEqualArea()
 
-      // Rotate the map to the south pole
-      .rotate([0, 90])
+      // Rotate the globe to euro-centric
+      .rotate([-15, -30])
 
       // Remove some extra parts of the map away from the center
-      .clipAngle(50)
+      .clipAngle(150)
 
       // Scale the map to the screen size
       .fitSize([mapSizeConstraint, mapSizeConstraint], {
@@ -49,31 +48,32 @@ const CovidMap = (props) => {
       countryPaths.map((path, index) => {
         // This will wind up building a lot of logic we can use for conditional rendering later on
         const currentCountry = COUNTRIES[index].properties.name
-        // Determine the current country exists
+        // Determine the current country exists in the covid data
         const findCountry = data.some(
           (country) => country.name === currentCountry
         )
         // Retrieve data for it or return null if not found
-        const currentCountryData = foundCountry
-          ? data.find((country) => country.name === currentCountry['data'])
+        const currentCountryData = findCountry
+          ? data.find((country) => country.name === currentCountry)['data']
           : null
-        // Make sure data exists or return false
+        // Make sure the dates match or return false
         const hasData = findCountry
-          ? currentCountryData.some((data) => data.date === date)
+          ? currentCountryData.some((data) => data.Date_reported === date)
           : false
         // get the date index from the data
         const dateIdx = hasData
-          ? currentCountryData.findIndex((x) => x.date === date)
+          ? currentCountryData.findIndex((x) => x.Date_reported === date)
           : null
 
         return (
           <Path
-            key={COUNTRIES[index].properties.name}
+            key={currentCountry}
             d={path}
             stroke={'#aaa'}
             strokeOpacity={0.3}
             strokeWidth={0.6}
-            fill={ // Check whether there is data and , if so, generate colors for it
+            fill={
+              // Check whether there is data and , if so, generate colors for it
               hasData ? colorScale(currentCountryData[dateIdx][stat]) : '#aaa'
             }
             // If data exists, make this opaque. Otherwise, leave it translucent
@@ -84,6 +84,7 @@ const CovidMap = (props) => {
     )
   }, [])
 
+  console.log(countryList)
   return (
     <View style={styles.map}>
       <Svg width={dimensions.width} height={dimensions.height / 2}>
