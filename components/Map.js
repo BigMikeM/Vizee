@@ -3,13 +3,45 @@ import * as d3 from 'd3'
 import Svg, { G, Path, Circle } from 'react-native-svg'
 import { View, StyleSheet } from 'react-native'
 import { COUNTRIES } from '../assets/CountryShapes'
+import {
+  PanGestureHandler,
+  PinchGestureHandler,
+  State
+} from 'react-native-gesture-handler'
 
 const CovidMap = (props) => {
   const [countryList, setCountryList] = useState([])
   const { dimensions, data, date, colorScale, stat } = props
-  // The below will determine whether to keep the map constrained to half the height or half the
-  // width of the phone screen
-  // useMemo will allow us to only do this when something changes, rather than every render
+  // The following states are for pinch-zoom scaling effects.
+  const [transX, setTransX] = useState(0)
+  const [transY, setTransY] = useState(0)
+  const [scale, setScale] = useState(1)
+  const [prevScale, setPrevScale] = useState(1)
+  const [lastScaleOffset, setLastScaleOffset] = useState(0)
+
+  const pinchStateHandler = e => {
+    if (event.nativeElement.oldState === State.UNDETERMINED) {
+      setLastScaleOffset(-1 + scale)
+    }
+  }
+
+  const pinchGestureHandler = e => {
+    if (event.nativeElement.scale + lastScaleOffset >= 1 && event.nativeElement.scale + lastScaleOffset <= 5) {
+      setPrevScale(scale)
+      setScale(event.nativeElement.scale + lastScaleOffset)
+      setTransX(
+        transX - (
+          event.nativeElement.focalX / scale -
+          event.nativeElement.focalX / prevScale
+        )
+      )
+      setTransY(
+        event.nativeElement.focalY / scale -
+        event.nativeElement.focalY / prevScale
+      )
+    }
+  }
+
   const mapSizeConstraint = useMemo(() => {
     return dimensions.width > dimensions.height / 2
       ? dimensions.height / 2
@@ -18,23 +50,15 @@ const CovidMap = (props) => {
 
   const countryPaths = useMemo(() => {
     const projection = d3
-      .geoAzimuthalEqualArea()
-
-      // Rotate the globe to euro-centric
-      .rotate([-15, -30])
-
-      // Remove some extra parts of the map away from the center
-      .clipAngle(150)
-
-      // Scale the map to the screen size
+      .geoAzimuthalEqualArea() // Rotate the globe to euro-centric
+      .rotate([-15, -30]) // Remove some extra parts of the map away from the center
+      .clipAngle(150) // Scale the map to the screen size
       .fitSize([mapSizeConstraint, mapSizeConstraint], {
         type: 'FeatureCollection',
         features: COUNTRIES
       })
-
       // Move ('translate') the map to the center of the screen space
       .translate([dimensions.width / 2, mapSizeConstraint / 2])
-
     // Create a 'geoPath' for the SVG
     const geoPath = d3.geoPath().projection(projection)
     // And now create the SVG path for every country
@@ -87,17 +111,27 @@ const CovidMap = (props) => {
   console.log(countryList)
   return (
     <View style={styles.map}>
-      <Svg width={dimensions.width} height={dimensions.height / 2}>
-        <G>
-          <Circle
-            cx={dimensions.width / 2}
-            cy={mapSizeConstraint / 2}
-            r={mapSizeConstraint / 2}
-            fill={'#3b454f'}
-          />
-          {countryList.map((x) => x)}
-        </G>
-      </Svg>
+      <PanGestureHandler
+        onGestureEvent={(e) => panGestureHandler(e)}
+        onHandlerStateChange={(e) => panStateHandler(e)}
+      >
+        <PinchGestureHandler
+          onGestureEvent={(e) => pinchGestureHandler(e)}
+          onHandlerStateChange={(e) => pinchStateHandler(e)}
+        >
+          <Svg width={dimensions.width} height={dimensions.height / 2}>
+            <G transform={`scale(${scale}) translate(${-transX},${-transY})`}>
+              <Circle
+                cx={dimensions.width / 2}
+                cy={mapSizeConstraint / 2}
+                r={mapSizeConstraint / 2}
+                fill={'#3b454f'}
+              />
+              {countryList.map((x) => x)}
+            </G>
+          </Svg>
+        </PinchGestureHandler>
+      </PanGestureHandler>
     </View>
   )
 }
