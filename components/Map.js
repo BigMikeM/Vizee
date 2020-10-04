@@ -19,25 +19,25 @@ const CovidMap = (props) => {
   const [prevScale, setPrevScale] = useState(1)
   const [lastScaleOffset, setLastScaleOffset] = useState(0)
 
-  const pinchStateHandler = e => {
-    if (event.nativeElement.oldState === State.UNDETERMINED) {
+  const pinchStateHandler = (e) => {
+    if (e.nativeElement.oldState === State.UNDETERMINED) {
       setLastScaleOffset(-1 + scale)
     }
   }
 
-  const pinchGestureHandler = e => {
-    if (event.nativeElement.scale + lastScaleOffset >= 1 && event.nativeElement.scale + lastScaleOffset <= 5) {
+  const pinchGestureHandler = (e) => {
+    if (
+      e.nativeElement.scale + lastScaleOffset >= 1 &&
+      e.nativeElement.scale + lastScaleOffset <= 5
+    ) {
       setPrevScale(scale)
-      setScale(event.nativeElement.scale + lastScaleOffset)
+      setScale(e.nativeElement.scale + lastScaleOffset)
       setTransX(
-        transX - (
-          event.nativeElement.focalX / scale -
-          event.nativeElement.focalX / prevScale
-        )
+        transX -
+          (e.nativeElement.focalX / scale - e.nativeElement.focalX / prevScale)
       )
       setTransY(
-        event.nativeElement.focalY / scale -
-        event.nativeElement.focalY / prevScale
+        e.nativeElement.focalY / scale - e.nativeElement.focalY / prevScale
       )
     }
   }
