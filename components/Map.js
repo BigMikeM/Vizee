@@ -18,26 +18,46 @@ const CovidMap = (props) => {
   const [scale, setScale] = useState(1)
   const [prevScale, setPrevScale] = useState(1)
   const [lastScaleOffset, setLastScaleOffset] = useState(0)
+  // And these last two useStates are for panning
+  const [lastTransX, setLastTransX] = useState(0)
+  const [lastTransY, setLastTransY] = useState(0)
+
+  const panStateHandler = (e) => {
+    if (e.nativeEvent.oldState === State.UNDETERMINED) {
+      setLastTransX(lastTransX)
+      setLastTransY(lastTransY)
+    }
+  }
+
+  const panGestureHandler = (e) => {
+    setTransX(-e.nativeEvent.transX / scale + lastTransX)
+    setTransY(-e.nativeEvent.transY / scale + lastTransY)
+  }
 
   const pinchStateHandler = (e) => {
-    if (e.nativeElement.oldState === State.UNDETERMINED) {
+    if (e.nativeEvent.oldState === State.UNDETERMINED) {
       setLastScaleOffset(-1 + scale)
     }
   }
 
   const pinchGestureHandler = (e) => {
     if (
-      e.nativeElement.scale + lastScaleOffset >= 1 &&
-      e.nativeElement.scale + lastScaleOffset <= 5
+      e.nativeEvent.scale + lastScaleOffset >= 1 &&
+      e.nativeEvent.scale + lastScaleOffset <= 5
     ) {
       setPrevScale(scale)
-      setScale(e.nativeElement.scale + lastScaleOffset)
+      setScale(e.nativeEvent.scale + lastScaleOffset)
       setTransX(
-        transX -
-          (e.nativeElement.focalX / scale - e.nativeElement.focalX / prevScale)
+        transX - (
+          e.nativeEvent.focalX / scale -
+          e.nativeEvent.focalX / prevScale
+        )
       )
       setTransY(
-        e.nativeElement.focalY / scale - e.nativeElement.focalY / prevScale
+        transY - (
+          e.nativeEvent.focalY / scale -
+          e.nativeEvent.focalY / prevScale
+        )
       )
     }
   }
@@ -52,7 +72,7 @@ const CovidMap = (props) => {
     const projection = d3
       .geoAzimuthalEqualArea() // Rotate the globe to euro-centric
       .rotate([-15, -30]) // Remove some extra parts of the map away from the center
-      .clipAngle(150) // Scale the map to the screen size
+      .clipAngle(100) // Scale the map to the screen size
       .fitSize([mapSizeConstraint, mapSizeConstraint], {
         type: 'FeatureCollection',
         features: COUNTRIES
@@ -108,7 +128,6 @@ const CovidMap = (props) => {
     )
   }, [])
 
-  console.log(countryList)
   return (
     <View style={styles.map}>
       <PanGestureHandler
