@@ -24,8 +24,9 @@ const CovidMap = (props) => {
 
   const panStateHandler = (e) => {
     if (e.nativeEvent.oldState === State.UNDETERMINED) {
-      setLastTransX(lastTransX)
-      setLastTransY(lastTransY)
+    console.log(State.UNDETERMINED)
+      setLastTransX(transX)
+      setLastTransY(transY)
     }
   }
 
@@ -36,8 +37,8 @@ const CovidMap = (props) => {
   }
 
   const panGestureHandler = (e) => {
-    setTransX(-e.nativeEvent.transX / scale + lastTransX)
-    setTransY(-e.nativeEvent.transY / scale + lastTransY)
+    setTransX(-e.nativeEvent.translationX / scale + lastTransX)
+    setTransY(-e.nativeEvent.translationY / scale + lastTransY)
   }
 
   const pinchGestureHandler = (e) => {
