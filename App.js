@@ -51,10 +51,8 @@ const App = () => {
   const maxY = useMemo(() => {
     // d3.max will find the maximum value in an array! This way, we can find our maximum
     // 'Y' value (the vertical axis) based on our 'stat' value on state
-    return d3.max(covidData, (country) =>
-      d3.max(country.data, (d) => d[stat], [stat])
-    )
-  })
+    return d3.max(covidData, (country) => d3.max(country.data, (d) => d[stat]))
+  }, [stat])
 
   const colorScale = useMemo(() => {
     // This function will interpolate and scale shades of blue based on given input
