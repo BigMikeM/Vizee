@@ -29,15 +29,15 @@ const CovidMap = (props) => {
     }
   }
 
-  const panGestureHandler = (e) => {
-    setTransX(-e.nativeEvent.transX / scale + lastTransX)
-    setTransY(-e.nativeEvent.transY / scale + lastTransY)
-  }
-
   const pinchStateHandler = (e) => {
     if (e.nativeEvent.oldState === State.UNDETERMINED) {
       setLastScaleOffset(-1 + scale)
     }
+  }
+
+  const panGestureHandler = (e) => {
+    setTransX(-e.nativeEvent.transX / scale + lastTransX)
+    setTransY(-e.nativeEvent.transY / scale + lastTransY)
   }
 
   const pinchGestureHandler = (e) => {
@@ -48,16 +48,12 @@ const CovidMap = (props) => {
       setPrevScale(scale)
       setScale(e.nativeEvent.scale + lastScaleOffset)
       setTransX(
-        transX - (
-          e.nativeEvent.focalX / scale -
-          e.nativeEvent.focalX / prevScale
-        )
+        transX -
+          (e.nativeEvent.focalX / scale - e.nativeEvent.focalX / prevScale)
       )
       setTransY(
-        transY - (
-          e.nativeEvent.focalY / scale -
-          e.nativeEvent.focalY / prevScale
-        )
+        transY -
+          (e.nativeEvent.focalY / scale - e.nativeEvent.focalY / prevScale)
       )
     }
   }
@@ -69,11 +65,13 @@ const CovidMap = (props) => {
   }, [dimensions])
 
   const countryPaths = useMemo(() => {
+    const clipAngle = 100
     const projection = d3
-      .geoAzimuthalEqualArea() // Rotate the globe to euro-centric
-      .rotate([-15, -30]) // Remove some extra parts of the map away from the center
-      .clipAngle(100) // Scale the map to the screen size
+      .geoAzimuthalEqualArea()
+      .rotate([-15, -30]) // Rotate the globe to euro-centric
+      .clipAngle(clipAngle) // Remove some extra parts of the map away from the center
       .fitSize([mapSizeConstraint, mapSizeConstraint], {
+        // Scale the map to the screen size
         type: 'FeatureCollection',
         features: COUNTRIES
       })
@@ -90,7 +88,7 @@ const CovidMap = (props) => {
   useEffect(() => {
     setCountryList(
       countryPaths.map((path, index) => {
-        // This will wind up building a lot of logic we can use for conditional rendering later on
+        // Parse that data!
         const currentCountry = COUNTRIES[index].properties.name
         // Determine the current country exists in the covid data
         const findCountry = data.some(
