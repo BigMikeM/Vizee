@@ -13,5 +13,6 @@ module.exports = {
         inlineRequires: false
       }
     })
-  }
+  },
+  blockList: '/assets/dataRestructure.js'
 }

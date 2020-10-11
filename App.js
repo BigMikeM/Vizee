@@ -40,7 +40,7 @@ const App = () => {
      *  determine if anything matches our criteria (d[stat] >= 10) and return the index or
      *  a negative 1 to show it wasn't found. We don't want anything that comes back `-1` */
     const filteredCountries = countriesWithAverage.filter(
-      (country) => country.data.findIndex((d, _) => d[stat] >= 10) != -1
+      (country) => country.data.findIndex((d, _) => d[stat] >= 100) != -1
     )
 
     return filteredCountries
