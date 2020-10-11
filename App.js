@@ -9,7 +9,7 @@
 import React, { useState, useMemo } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import CovidMap from './components/Map'
-import rawCovidData from './assets/data/WHO-COVID-19-global-data.json'
+import rawCovidData from './assets/data/rawData.json'
 import rollingAverage from './assets/RollingAverage'
 import dataRestructure from './assets/dataRestructure'
 import * as d3 from 'd3'
@@ -22,8 +22,6 @@ const App = () => {
   // The useMemo hook is useful here because we don't want all this calculation
   // happening on every render, just when the values change.
   const covidData = useMemo(() => {
-    // First, I'm restructuring the data from the JSON file a bit
-    const newData = dataRestructure(rawCovidData)
     // This will transform our data in to an array of objects
     const countryArray = Object.keys(newData).map((country) => ({
       name: country,
