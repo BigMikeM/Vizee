@@ -11,7 +11,6 @@ import { Dimensions, StyleSheet, View } from 'react-native'
 import CovidMap from './components/Map'
 import rawCovidData from './assets/data/rawData.json'
 import rollingAverage from './assets/RollingAverage'
-import dataRestructure from './assets/dataRestructure'
 import * as d3 from 'd3'
 
 const App = () => {
@@ -23,7 +22,7 @@ const App = () => {
   // happening on every render, just when the values change.
   const covidData = useMemo(() => {
     // This will transform our data in to an array of objects
-    const countryArray = Object.keys(newData).map((country) => ({
+    const countryArray = Object.keys(rawCovidData).map((country) => ({
       name: country,
       data: newData[country]
     }))
